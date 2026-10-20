@@ -456,6 +456,27 @@ p { margin: 0 0 var(--e3); }
 .revelar.animar { opacity: 0; transform: translateY(18px); }
 .revelar.animar.visible { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .revelar { opacity: 1; transform: none; transition: none; } }
+
+/* Ayuda: independiente del registro escolar y del botón de WhatsApp. */
+.asistente-abrir { position:fixed; left:21px; bottom:21px; z-index:40; border:1px solid var(--azul); border-radius:12px; padding:13px 21px; background:var(--azul); color:white; font:700 15px var(--fuente); cursor:pointer; box-shadow:var(--sombra); }
+.asistente-abrir[hidden] { display:none; }
+.asistente { width:min(520px,calc(100% - 26px)); max-height:calc(100dvh - 34px); padding:0; border:1px solid var(--borde); border-radius:18px; color:var(--texto); background:white; box-shadow:var(--sombra-alta); }
+.asistente::backdrop { background:rgba(21,27,59,.58); }
+.asistente-cabecera { display:flex; align-items:flex-start; gap:13px; justify-content:space-between; padding:21px; background:var(--azul); color:white; }
+.asistente-cabecera h2 { font-size:1.35rem; margin:0 0 8px; }
+.asistente-cabecera p { font-size:.82rem; margin:0; }
+.asistente-cabecera button { border:0; background:transparent; color:white; font-size:30px; line-height:1; cursor:pointer; padding:0 5px; }
+.asistente-contenido { padding:21px; font-size:.93rem; }
+.asistente-temas { display:flex; flex-wrap:wrap; gap:8px; margin:13px 0; }
+.asistente-temas button { text-align:left; font:inherit; font-size:.82rem; padding:8px 13px; border:1px solid var(--borde); border-radius:8px; color:var(--azul); background:var(--papel); cursor:pointer; }
+.asistente-temas button:hover { border-color:var(--azul); }
+.asistente-respuesta:not(:empty) { white-space:pre-line; padding:13px; background:var(--amarillo-tinta); border-left:3px solid var(--amarillo); margin:13px 0 21px; }
+.asistente-enviar { display:flex; gap:8px; margin-top:8px; }
+.asistente-enviar input { min-width:0; flex:1; width:100%; font:inherit; padding:10px; border:1px solid var(--borde); border-radius:8px; }
+.asistente-enviar button { padding:10px 13px; font-size:.85rem; }
+.asistente-contacto { margin-top:21px; padding-top:21px; border-top:1px solid var(--borde); }
+.asistente-nota { color:var(--suave); font-size:.76rem; line-height:1.6; margin-top:13px; overflow-wrap:anywhere; }
+@media (max-width:400px) { .asistente-enviar { flex-direction:column; } .asistente-abrir { left:13px; bottom:21px; padding:13px; } }
 </style>
 </head>
 <body>
@@ -763,6 +784,83 @@ p { margin: 0 0 var(--e3); }
   <a class="whatsapp-flotante" href="https://wa.me/529515096589?text=Hola%2C%20quiero%20informes%20del%20Colegio%20Leonardo%20Fibonacci." target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
     <svg aria-hidden="true" viewBox="0 0 24 24" width="26" height="26"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.8-1.4.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 12 12 0 0 0 4.6 4c1.7.7 2.3.8 3.1.7a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .1-1.2c0-.2-.2-.2-.5-.4Z"/></svg>
   </a>
+
+
+  <button class="asistente-abrir" id="asistente-abrir" type="button" aria-haspopup="dialog" hidden>¿Tienes dudas?</button>
+  <dialog class="asistente" id="asistente" aria-labelledby="asistente-titulo">
+    <header class="asistente-cabecera">
+      <div><h2 id="asistente-titulo">Ayuda del colegio</h2><p>Respuestas automáticas a preguntas frecuentes</p></div>
+      <button type="button" id="asistente-cerrar" aria-label="Cerrar asistente">×</button>
+    </header>
+    <div class="asistente-contenido">
+      <p>Hola. Puedo orientarte sobre el colegio. Elige un tema o escribe una pregunta.</p>
+      <div class="asistente-temas" id="asistente-temas" aria-label="Preguntas frecuentes"></div>
+      <div class="asistente-respuesta" id="asistente-respuesta" role="status" aria-live="polite" aria-atomic="true"></div>
+      <form id="asistente-formulario">
+        <label for="asistente-pregunta">Tu pregunta</label>
+        <div class="asistente-enviar"><input id="asistente-pregunta" name="pregunta" maxlength="400" required autocomplete="off" placeholder="Ejemplo: ¿dónde están?"><button class="boton boton-azul" type="submit">Consultar</button></div>
+      </form>
+      <div class="asistente-contacto">
+        <p>¿Necesitas atención del personal?</p>
+        <a class="boton boton-azul" id="asistente-correo" href="mailto:fernandocort19@gmail.com">Preparar solicitud por correo</a>
+        <p class="asistente-nota">Se abrirá tu aplicación de correo. Revisa el mensaje y envíalo para completar la solicitud. Si no abre, escribe a <a href="mailto:fernandocort19@gmail.com">fernandocort19@gmail.com</a>.</p>
+      </div>
+      <p class="asistente-nota">Este asistente usa respuestas preparadas; no es una IA generativa. No escribas nombres ni información personal de alumnos. Tus preguntas no se guardan en este sitio.</p>
+    </div>
+  </dialog>
+  <script>// Ayuda automática local. Sin servicios externos ni almacenamiento.
+(function () {
+  "use strict";
+  const datos = {"version": 1, "fuente": "Información publicada en sitio/index.html; pendiente de validación final por el colegio.", "preguntas": [{"id": "niveles", "pregunta": "¿Qué niveles educativos ofrecen?", "respuesta": "El colegio ofrece preescolar y primaria."}, {"id": "ubicacion", "pregunta": "¿Dónde está el colegio?", "respuesta": "Calle Libertad #147, Paraje La Loma, Trinidad de Viguera, Oaxaca de Juárez."}, {"id": "contacto", "pregunta": "¿Cómo puedo pedir informes?", "respuesta": "Puedes llamar o escribir por WhatsApp al 951 509 6589."}, {"id": "programas", "pregunta": "¿Tienen inglés y computación?", "respuesta": "El sitio del colegio anuncia inglés desde preescolar y clases de computación."}, {"id": "inscripciones", "pregunta": "¿Cómo solicito información para el ciclo 2027?", "respuesta": "Contacta al colegio para consultar disponibilidad y acordar una visita. El personal te confirmará los pasos de inscripción."}, {"id": "costos_horarios", "pregunta": "¿Cuánto cuesta y cuáles son los horarios y requisitos?", "respuesta": "No tengo información confirmada sobre colegiaturas, horarios ni documentos requeridos. Puedo ayudarte a preparar una consulta para el personal del colegio."}], "reglas": ["No inventar costos, horarios, disponibilidad ni requisitos.", "No solicitar datos personales de menores ni consultar el registro escolar.", "No afirmar que se envió un correo sin confirmación del servicio de envío."], "pendientes": ["Validación final de respuestas por el colegio."], "correo_ayuda": "fernandocort19@gmail.com"};
+  const dialogo = document.getElementById("asistente");
+  const abrir = document.getElementById("asistente-abrir");
+  if (!dialogo || typeof dialogo.showModal !== "function") return;
+  const pregunta = document.getElementById("asistente-pregunta");
+  const respuesta = document.getElementById("asistente-respuesta");
+  const correo = document.getElementById("asistente-correo");
+  const temas = document.getElementById("asistente-temas");
+  const claves = {
+    niveles: ["nivel", "preescolar", "primaria", "edad", "anos", "grados"],
+    ubicacion: ["donde", "direccion", "ubicacion", "ubicados", "llegar", "mapa"],
+    contacto: ["telefono", "whatsapp", "contacto", "llamar", "numero"],
+    programas: ["ingles", "computacion", "programas", "idioma"],
+    inscripciones: ["inscribir", "inscripcion", "inscripciones", "ciclo", "2027", "visita", "cupo", "disponibilidad"],
+    costos_horarios: ["cuesta", "costo", "costos", "precio", "colegiatura", "horario", "horarios", "requisito", "requisitos", "documentos", "pago", "becas"]
+  };
+  function normalizar(texto) { return texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim(); }
+  function actualizarCorreo(consulta) {
+    const cuerpo = "Hola, solicito ayuda del personal del Colegio Leonardo Fibonacci.\n\nMi consulta: " + (consulta || "Quisiera recibir más información del colegio.") + "\n\nNombre y medio de contacto (completar antes de enviar): ";
+    correo.href = "mailto:" + datos.correo_ayuda + "?subject=" + encodeURIComponent("Solicitud de ayuda · Colegio Leonardo Fibonacci") + "&body=" + encodeURIComponent(cuerpo);
+  }
+  function mostrar(consulta, texto) {
+    respuesta.textContent = texto;
+    actualizarCorreo(consulta);
+  }
+  datos.preguntas.forEach(function (tema) {
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.textContent = tema.pregunta;
+    boton.addEventListener("click", function () { pregunta.value = tema.pregunta; mostrar(tema.pregunta, tema.respuesta); });
+    temas.appendChild(boton);
+  });
+  abrir.hidden = false;
+  abrir.addEventListener("click", function () { dialogo.showModal(); pregunta.focus(); });
+  document.getElementById("asistente-cerrar").addEventListener("click", function () { dialogo.close(); });
+  dialogo.addEventListener("close", function () { abrir.focus(); });
+  document.getElementById("asistente-formulario").addEventListener("submit", function (evento) {
+    evento.preventDefault();
+    const consulta = pregunta.value.trim();
+    if (!consulta) { pregunta.setCustomValidity("Escribe una pregunta o elige un tema."); pregunta.reportValidity(); return; }
+    pregunta.setCustomValidity("");
+    const palabras = new Set(normalizar(consulta).split(" "));
+    const encontrados = datos.preguntas.filter(function (tema) { return claves[tema.id].some(function (clave) { return palabras.has(clave); }); });
+    const texto = encontrados.length ? encontrados.map(function (tema) { return tema.respuesta; }).join("\n\n") : "No tengo una respuesta confirmada para esa pregunta. Puedes elegir uno de los temas o preparar una solicitud por correo para que el personal te ayude.";
+    mostrar(consulta, texto);
+  });
+  pregunta.addEventListener("input", function () { pregunta.setCustomValidity(""); actualizarCorreo(pregunta.value.trim()); });
+  actualizarCorreo("");
+})();
+</script>
 
   <script>// Sitio del Colegio Leonardo Fibonacci · JavaScript mínimo, sin dependencias.
 (function () {
